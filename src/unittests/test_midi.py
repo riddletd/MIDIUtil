@@ -1,27 +1,13 @@
-#!/usr/bin/env python
-# -----------------------------------------------------------------------------
-# Name:        miditest.py
-# Purpose:     Unit testing harness for midiutil
-#
-# Author:      Mark Conway Wirt <emergentmusics) at (gmail . com>
-#
-# Created:     2008/04/17
-# Copyright:   (c) 2009-2016, Mark Conway Wirt
-# License:     Please see License.txt for the terms under which this
-#              software is distributed.
-# -----------------------------------------------------------------------------
-
-
 from __future__ import division, print_function
-import sys
-import struct
 
+import struct
+import sys
 import unittest
 
 from midiutil.MidiFile import *
-
-from midiutil.MidiFile import writeVarLength,  \
-    frequencyTransform, returnFrequency, MAJOR, MINOR, SHARPS, FLATS, MIDIFile
+from midiutil.MidiFile import (FLATS, MAJOR, MINOR, SHARPS, MIDIFile,
+                               frequencyTransform, returnFrequency,
+                               writeVarLength)
 
 
 class Decoder(object):
