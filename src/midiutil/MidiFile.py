@@ -1,6 +1,6 @@
-from Helper import sortEvents
-from MIDIHeader import MIDIHeader
-from MIDITrack import MIDITrack
+from midiutil.Helper import sortEvents
+from midiutil.MIDIHeader import MIDIHeader
+from midiutil.MIDITrack import MIDITrack
 
 controllerEventTypes = {'pan': 0x0a}
 QUARTER_NOTE_TICKS = 960
@@ -20,14 +20,16 @@ class MIDIFile(object):
             quarterNoteTicks=QUARTER_NOTE_TICKS, 
             isEventTimeTicks=False
         ):
+        if fileFormat == 1: self.numTracks = numTracks + 1  
+        else: self.numTracks = numTracks
         self.header = MIDIHeader(self.numTracks, fileFormat, quarterNoteTicks)
         self.tracks = []
-        self.numTracks = numTracks + 1 if fileFormat == 1 else self.numTracks = numTracks
         self.adjustOrigin = adjustOrigin
         self.isClosed = False
         self.quarterNoteTicks = quarterNoteTicks
         self.isEventTimeTicks = isEventTimeTicks
-        self.convertTimeToTicks = lambda x: x if self.isEventTimeTicks else self.convertTimeToTicks = self.convertQuarterToTicks
+        if self.isEventTimeTicks: self.convertTimeToTicks = lambda x: x  
+        else: self.convertTimeToTicks = self.convertQuarterToTicks
 
         for i in range(0, self.numTracks):
             self.tracks.append(MIDITrack(removeDuplicates, deinterleave))
@@ -237,7 +239,7 @@ class MIDIFile(object):
 
         origin = self.findOrigin()
         for i in range(0, self.numTracks):
-            self.tracks[i].adjustTimeAndOrigin(origin, self.adjustOrigin)
+            self.tracks[i].adjustTimeAndOriginToBeRelative(origin, self.adjustOrigin)
             self.tracks[i].writeMIDIStream()
 
         self.isClosed = True

@@ -4,14 +4,14 @@ import struct
 
 def writeVarLength(i):
     if i == 0: return [0]
-    vlBytes = []
+    bytes = []
     hiBit = 0x00
     while i > 0:
-        vlBytes.append(((i & 0x7f) | hiBit) & 0xff)
+        bytes.append(((i & 0x7f) | hiBit) & 0xff)
         i >>= 7
         hiBit = 0x80
-    vlBytes.reverse()
-    return vlBytes
+    bytes.reverse()
+    return bytes
 
 def readVarLength(offset, buffer):
     tickOffset = offset
@@ -28,22 +28,25 @@ def readVarLength(offset, buffer):
     return (output, bytesRead)
 
 
-def frequencyToBytes(frequency):
-    resolution = 16384
-    frequency = float(frequency)
-    dollars = 69 + 12 * math.log(frequency / (float(440)), 2)
-    firstByte = int(dollars)
-    lowerFreq = 440 * pow(2.0, ((float(firstByte) - 69.0) / 12.0))
-    centDif = 1200 * math.log((frequency / lowerFreq), 2) if frequency != lowerFreq else 0
-    cents = round(centDif / 100 * resolution)
-    secondByte = min([int(cents) >> 7, 0x7F])
-    thirdByte = cents - (secondByte << 7)
-    thirdByte = min([thirdByte, 0x7f])
-    if thirdByte == 0x7f and secondByte == 0x7F and firstByte == 0x7F:
-        thirdByte = 0x7e
-    thirdByte = int(thirdByte)
-    return [firstByte, secondByte, thirdByte]
+def frequencyToBytes(frequency: float):
+    RESOLUTION = 16384
+    firstByte = int(getDollars(frequency))
+    secondByte = min([int(getCents(RESOLUTION, getCentDifference(frequency, getLowFrequency(firstByte)))) >> 7, 0x7F])
+    thirdByte = min([getCents(RESOLUTION, getCentDifference(frequency, getLowFrequency(firstByte))) - (secondByte << 7), 0x7f])
+    if thirdByte == 0x7f and secondByte == 0x7F and firstByte == 0x7F: thirdByte = 0x7e
+    return [firstByte, secondByte, int(thirdByte)]
 
+def getDollars(frequency: float):
+    return 69 + 12 * math.log(frequency / (float(440)), 2)
+
+def getLowFrequency(firstByte: int):
+    return 440 * pow(2.0, ((float(firstByte) - 69.0) / 12.0))
+
+def getCentDifference(frequency: float, lowerFreq: float):
+    return 1200 * math.log((frequency / lowerFreq), 2) if frequency != lowerFreq else 0
+
+def getCents(resolution, centDif):
+    return round(centDif / 100 * resolution)
 
 def bytesToFrequency(bytes):
     resolution = 16384.0
@@ -51,7 +54,6 @@ def bytesToFrequency(bytes):
     frac = (float((int(bytes[1]) << 7) + int(bytes[2])) * 100.0) / resolution
     frequency = baseFrequency * pow(2.0, frac / 1200.0)
     return frequency
-
 
 def sortEvents(event):
     return (event.tick, event.sec_sort_order, event.insertion_order)

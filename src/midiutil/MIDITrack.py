@@ -1,20 +1,20 @@
 import struct
 
-from Event.Events.ChannelPressure import ChannelPressure
-from Event.Events.Controller import ControllerEvent
-from Event.Events.Copyright import Copyright
-from Event.Events.KeySignature import KeySignature
-from Event.Events.NoteOff import NoteOff
-from Event.Events.NoteOn import NoteOn
-from Event.Events.PitchWheel import PitchWheelEvent
-from Event.Events.ProgramChange import ProgramChange
-from Event.Events.SysEx import SysExEvent
-from Event.Events.Tempo import Tempo
-from Event.Events.Text import Text
-from Event.Events.TimeSignature import TimeSignature
-from Event.Events.TrackName import TrackName
-from Event.Events.UniversalSysEx import UniversalSysEx
-from Helper import *
+from midiutil.Event.Events.ChannelPressure import ChannelPressure
+from midiutil.Event.Events.Controller import Controller
+from midiutil.Event.Events.Copyright import Copyright
+from midiutil.Event.Events.KeySignature import KeySignature
+from midiutil.Event.Events.NoteOff import NoteOff
+from midiutil.Event.Events.NoteOn import NoteOn
+from midiutil.Event.Events.PitchWheel import PitchWheel
+from midiutil.Event.Events.ProgramChange import ProgramChange
+from midiutil.Event.Events.SysEx import SysEx
+from midiutil.Event.Events.Tempo import Tempo
+from midiutil.Event.Events.Text import Text
+from midiutil.Event.Events.TimeSignature import TimeSignature
+from midiutil.Event.Events.TrackName import TrackName
+from midiutil.Event.Events.UniversalSysEx import UniversalSysEx
+from midiutil.Helper import *
 
 
 class MIDITrack(object):
@@ -32,16 +32,16 @@ class MIDITrack(object):
         self.eventList.append(NoteOff(channel, pitch, tick + duration, volume, annotation=annotation, insertion_order=insertion_order))
 
     def addControllerEvent(self, channel, tick, controller_number, parameter, insertion_order=0):
-        self.eventList.append(ControllerEvent(channel, tick, controller_number, parameter, insertion_order=insertion_order))
+        self.eventList.append(Controller(channel, tick, controller_number, parameter, insertion_order=insertion_order))
 
     def addPitchWheelEvent(self, channel, tick, pitch_wheel_value, insertion_order=0):
-        self.eventList.append(PitchWheelEvent(channel, tick, pitch_wheel_value, insertion_order=insertion_order))
+        self.eventList.append(PitchWheel(channel, tick, pitch_wheel_value, insertion_order=insertion_order))
 
     def addTempo(self, tick, tempo, insertion_order=0):
         self.eventList.append(Tempo(tick, tempo, insertion_order=insertion_order))
 
     def addSysEx(self, tick, manID, payload, insertion_order=0):
-        self.eventList.append(SysExEvent(tick, manID, payload, insertion_order=insertion_order))
+        self.eventList.append(SysEx(tick, manID, payload, insertion_order=insertion_order))
 
     def addUniversalSysEx(self, tick, code, subcode, payload, sysExChannel=0x7F, realTime=False, insertion_order=0):
         self.eventList.append(UniversalSysEx(tick, realTime, sysExChannel, code, subcode, payload, insertion_order=insertion_order))
@@ -150,7 +150,7 @@ class MIDITrack(object):
 
         self.MIDIEventList = tempEventList
 
-    def getHeader():
+    def getHeader(self):
         return struct.pack('cccc', b'M', b'T', b'r', b'k')
 
     def writeTrack(self, fileHandle):

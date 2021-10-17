@@ -1,7 +1,7 @@
 import struct
 
-from Event import Event
-from Helper import writeVarLength
+from midiutil.Event.Event import Event
+from midiutil.Helper import writeVarLength
 
 
 class ChannelPressure(Event):

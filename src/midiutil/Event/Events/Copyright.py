@@ -1,6 +1,6 @@
 import struct
 
-from Event import Event
+from midiutil.Event.Event import Event
 
 from ...Helper import writeVarLength
 
