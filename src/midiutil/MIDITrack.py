@@ -19,82 +19,55 @@ from Helper import *
 
 class MIDITrack(object):
     def __init__(self, removeDuplicates, deinterleave):
-        self.headerString = struct.pack('cccc', b'M', b'T', b'r', b'k')
-        self.dataLength = 0
-        self.MIDIdata = b""
-        self.closed = False
+        self.rmDups = removeDuplicates
+        self.deinterleave = deinterleave
         self.eventList = []
         self.MIDIEventList = []
-        self.remdep = removeDuplicates
-        self.deinterleave = deinterleave
+        self.MIDIData = b""
+        self.dataLength = 0
+        self.closed = False
 
-    def addNoteByNumber(self, channel, pitch, tick, duration, volume,
-                        annotation=None, insertion_order=0):
-        self.eventList.append(NoteOn(channel, pitch, tick, duration, volume,
-                                     annotation=annotation,
-                                     insertion_order=insertion_order))
-        self.eventList.append(NoteOff(channel, pitch, tick + duration, volume,
-                                      annotation=annotation,
-                                      insertion_order=insertion_order))
+    def addNoteByNumber(self, channel, pitch, tick, duration, volume, annotation=None, insertion_order=0):
+        self.eventList.append(NoteOn(channel, pitch, tick, duration, volume, annotation=annotation, insertion_order=insertion_order))
+        self.eventList.append(NoteOff(channel, pitch, tick + duration, volume, annotation=annotation, insertion_order=insertion_order))
 
-    def addControllerEvent(self, channel, tick, controller_number, parameter,
-                           insertion_order=0):
-        self.eventList.append(ControllerEvent(channel, tick, controller_number,
-                                              parameter,
-                                              insertion_order=insertion_order))
+    def addControllerEvent(self, channel, tick, controller_number, parameter, insertion_order=0):
+        self.eventList.append(ControllerEvent(channel, tick, controller_number, parameter, insertion_order=insertion_order))
 
     def addPitchWheelEvent(self, channel, tick, pitch_wheel_value, insertion_order=0):
         self.eventList.append(PitchWheelEvent(channel, tick, pitch_wheel_value, insertion_order=insertion_order))
 
     def addTempo(self, tick, tempo, insertion_order=0):
-        self.eventList.append(Tempo(tick, tempo,
-                                    insertion_order=insertion_order))
+        self.eventList.append(Tempo(tick, tempo, insertion_order=insertion_order))
 
     def addSysEx(self, tick, manID, payload, insertion_order=0):
-        self.eventList.append(SysExEvent(tick, manID, payload,
-                                         insertion_order=insertion_order))
+        self.eventList.append(SysExEvent(tick, manID, payload, insertion_order=insertion_order))
 
-    def addUniversalSysEx(self, tick, code, subcode, payload,
-                          sysExChannel=0x7F, realTime=False,
-                          insertion_order=0):
-        self.eventList.append(UniversalSysEx(tick, realTime, sysExChannel,
-                              code, subcode, payload,
-                              insertion_order=insertion_order))
+    def addUniversalSysEx(self, tick, code, subcode, payload, sysExChannel=0x7F, realTime=False, insertion_order=0):
+        self.eventList.append(UniversalSysEx(tick, realTime, sysExChannel, code, subcode, payload, insertion_order=insertion_order))
 
     def addProgramChange(self, channel, tick, program, insertion_order=0):
-        self.eventList.append(ProgramChange(channel, tick, program,
-                                            insertion_order=insertion_order))
+        self.eventList.append(ProgramChange(channel, tick, program, insertion_order=insertion_order))
 
     def addChannelPressure(self, channel, tick, pressure_value, insertion_order=0):
-        self.eventList.append(ChannelPressure(channel, tick, pressure_value,
-                                                   insertion_order=insertion_order))
+        self.eventList.append(ChannelPressure(channel, tick, pressure_value, insertion_order=insertion_order))
 
     def addTrackName(self, tick, trackName, insertion_order=0):
-        self.eventList.append(TrackName(tick, trackName,
-                                        insertion_order=insertion_order))
+        self.eventList.append(TrackName(tick, trackName, insertion_order=insertion_order))
 
-    def addTimeSignature(self, tick, numerator, denominator, clocks_per_tick,
-                         notes_per_quarter, insertion_order=0):
-        self.eventList.append(TimeSignature(tick, numerator, denominator,
-                                            clocks_per_tick, notes_per_quarter,
-                                            insertion_order=insertion_order))
+    def addTimeSignature(self, tick, numerator, denominator, clocks_per_tick, notes_per_quarter, insertion_order=0):
+        self.eventList.append(TimeSignature(tick, numerator, denominator, clocks_per_tick, notes_per_quarter, insertion_order=insertion_order))
 
     def addCopyright(self, tick, notice, insertion_order=0):
-        self.eventList.append(Copyright(tick, notice,
-                                        insertion_order=insertion_order))
+        self.eventList.append(Copyright(tick, notice, insertion_order=insertion_order))
 
-    def addKeySignature(self, tick, accidentals, accidental_type, mode,
-                        insertion_order=0):
-        self.eventList.append(KeySignature(tick, accidentals, accidental_type,
-                                           mode,
-                                           insertion_order=insertion_order))
+    def addKeySignature(self, tick, accidentals, accidental_type, mode, insertion_order=0):
+        self.eventList.append(KeySignature(tick, accidentals, accidental_type, mode, insertion_order=insertion_order))
 
     def addText(self, tick, text, insertion_order=0):
-        self.eventList.append(Text(tick, text,
-                              insertion_order=insertion_order))
+        self.eventList.append(Text(tick, text, insertion_order=insertion_order))
 
-    def changeNoteTuning(self, tunings, sysExChannel=0x7F, realTime=True,
-                         tuningProgam=0, insertion_order=0):
+    def changeNoteTuning(self, tunings, sysExChannel=0x7F, realTime=True, tuningProgam=0, insertion_order=0):
         payload = struct.pack('>B', tuningProgam)
         payload = payload + struct.pack('>B', len(tunings))
         for (noteNumber, frequency) in tunings:
@@ -103,37 +76,31 @@ class MIDITrack(object):
             for byte in MIDIFreqency:
                 payload = payload + struct.pack('>B', byte)
 
-        self.eventList.append(UniversalSysEx(0, realTime, sysExChannel,
-                              8, 2, payload, insertion_order=insertion_order))
+        self.eventList.append(UniversalSysEx(0, realTime, sysExChannel, 8, 2, payload, insertion_order=insertion_order))
 
     def processEventList(self):
         self.MIDIEventList = [evt for evt in self.eventList]
-        self.MIDIEventList.sort(key=sort_events)
-        if self.deinterleave:
-            self.deInterleaveNotes()
+        self.MIDIEventList.sort(key=sortEvents)
+        if self.deinterleave: self.deInterleaveNotes()
 
     def removeDuplicates(self):
         s = set(self.eventList)
         self.eventList = list(s)
-        self.eventList.sort(key=sort_events)
+        self.eventList.sort(key=sortEvents)
 
     def closeTrack(self):
-        if self.closed:
-            return
+        if self.closed: return
         self.closed = True
-
-        if self.remdep:
-            self.removeDuplicates()
-
+        if self.rmDups: self.removeDuplicates()
         self.processEventList()
 
     def writeMIDIStream(self):
         self.writeChronologicalEventsToStream()
-        self.MIDIdata += self.getCloseEvent()
+        self.MIDIData += self.getCloseEvent()
         self.dataLength = self.getDataLength()
 
     def getDataLength(self):
-        return struct.pack('>L', len(self.MIDIdata))
+        return struct.pack('>L', len(self.MIDIData))
 
     def getCloseEvent(self):
         return struct.pack('BBBB', 0x00, 0xFF, 0x2F, 0x00)
@@ -141,7 +108,7 @@ class MIDITrack(object):
     def writeChronologicalEventsToStream(self):
         previous_event_tick = 0
         for event in self.MIDIEventList:
-            self.MIDIdata += event.serialize(previous_event_tick)
+            self.MIDIData += event.serialize(previous_event_tick)
 
     def deInterleaveNotes(self):
         tempEventList = []
@@ -167,11 +134,10 @@ class MIDITrack(object):
                 tempEventList.append(event)
 
         self.MIDIEventList = tempEventList
-        self.MIDIEventList.sort(key=sort_events)
+        self.MIDIEventList.sort(key=sortEvents)
 
     def adjustTimeAndOriginToBeRelative(self, origin, adjust):
-        if len(self.MIDIEventList) == 0:
-            return
+        if len(self.MIDIEventList) == 0: return
         tempEventList = []
         internal_origin = origin if adjust else 0
         runningTick = 0
@@ -184,7 +150,10 @@ class MIDITrack(object):
 
         self.MIDIEventList = tempEventList
 
+    def getHeader():
+        return struct.pack('cccc', b'M', b'T', b'r', b'k')
+
     def writeTrack(self, fileHandle):
-        fileHandle.write(self.headerString)
+        fileHandle.write(self.getHeader())
         fileHandle.write(self.dataLength)
-        fileHandle.write(self.MIDIdata)
+        fileHandle.write(self.MIDIData)

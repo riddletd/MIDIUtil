@@ -1,28 +1,26 @@
-
 import math
 import struct
 
 
 def writeVarLength(i):
     if i == 0: return [0]
-
-    vlbytes = []
-    hibit = 0x00
+    vlBytes = []
+    hiBit = 0x00
     while i > 0:
-        vlbytes.append(((i & 0x7f) | hibit) & 0xff)
+        vlBytes.append(((i & 0x7f) | hiBit) & 0xff)
         i >>= 7
-        hibit = 0x80
-    vlbytes.reverse()
-    return vlbytes
+        hiBit = 0x80
+    vlBytes.reverse()
+    return vlBytes
 
 def readVarLength(offset, buffer):
-    toffset = offset
+    tickOffset = offset
     output = 0
     bytesRead = 0
     while True:
         output = output << 7
-        byte = struct.unpack_from('>B', buffer, toffset)[0]
-        toffset = toffset + 1
+        byte = struct.unpack_from('>B', buffer, tickOffset)[0]
+        tickOffset = tickOffset + 1
         bytesRead = bytesRead + 1
         output = output + (byte & 127)
         if (byte & 128) == 0:
@@ -55,5 +53,5 @@ def bytesToFrequency(bytes):
     return frequency
 
 
-def sort_events(event):
+def sortEvents(event):
     return (event.tick, event.sec_sort_order, event.insertion_order)

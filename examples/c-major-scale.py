@@ -2,19 +2,22 @@
 
 from midiutil import MIDIFile
 
-degrees  = [60, 62, 64, 65, 67, 69, 71, 72]  # MIDI note number
-track    = 0
-channel  = 0
-time     = 0    # In beats
-duration = 1    # In beats
-tempo    = 60   # In BPM
-volume   = 100  # 0-127, as per the MIDI standard
+notes = [60, 62, 64, 65, 67, 69, 71, 72]
+track = 0
+channel = 0
+time = 0
+duration = 1
+tempo = 60
+volume = 100
 
-MyMIDI = MIDIFile(1)  # One track
+MyMIDI = MIDIFile(1)
 MyMIDI.addTempo(track, time, tempo)
 
-for i, pitch in enumerate(degrees):
+for i, pitch in enumerate(notes):
     MyMIDI.addNote(track, channel, pitch, time + i, duration, volume)
+
+for i, pitch in enumerate(notes):
+    MyMIDI.addNote(track, channel, pitch + 3, time + i, duration, volume)
 
 with open("major-scale.mid", "wb") as output_file:
     MyMIDI.writeFile(output_file)
